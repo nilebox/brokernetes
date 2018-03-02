@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["server.go"],
+    importpath = "github.com/nilebox/brokernetes/pkg/broker/brokerserver",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/broker/brokerapi:go_default_library",
+        "//pkg/broker/controller:go_default_library",
+        "//pkg/broker/util:go_default_library",
+        "//pkg/util:go_default_library",
+        "//vendor/github.com/deckarep/golang-set:go_default_library",
+        "//vendor/github.com/gorilla/mux:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/urfave/negroni:go_default_library",
+    ],
+)

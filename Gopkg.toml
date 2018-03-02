@@ -12,10 +12,6 @@ required = [
   name = "github.com/bazelbuild/buildtools"
 
 [[constraint]]
-  branch = "master" # latest
-  name = "github.com/stretchr/testify"
-
-[[constraint]]
   name = "k8s.io/apimachinery"
   branch = "release-1.9"
 

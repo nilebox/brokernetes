@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "catalog.go",
+        "schemas.go",
+        "service.go",
+        "service_binding.go",
+        "service_instance.go",
+        "service_plan.go",
+        "types.go",
+    ],
+    importpath = "github.com/nilebox/brokernetes/pkg/broker/brokerapi",
+    visibility = ["//visibility:public"],
+)

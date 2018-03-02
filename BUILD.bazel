@@ -1,4 +1,3 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
 gazelle(
@@ -12,12 +11,4 @@ gazelle(
     command = "fix",
     external = "vendored",
     prefix = "github.com/nilebox/brokernetes",
-)
-
-go_library(
-    name = "go_default_library",
-    srcs = ["types.go"],
-    importpath = "github.com/nilebox/brokernetes",
-    visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/aws/aws-sdk-go/aws/arn:go_default_library"],
 )
