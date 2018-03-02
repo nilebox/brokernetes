@@ -1,4 +1,4 @@
-package brokernetes
+package controller
 
 import (
 	"context"
@@ -32,11 +32,12 @@ const (
 )
 
 type brokernetesController struct {
+	appCtx    context.Context
 	schema    json.RawMessage
 	validator *gojsonschema.Schema
 }
 
-func NewController() (*brokernetesController, error) {
+func NewController(appCtx context.Context) (*brokernetesController, error) {
 	//schema, err := schemas.InstanceSchema()
 	//if err != nil {
 	//	return nil, err
@@ -48,8 +49,9 @@ func NewController() (*brokernetesController, error) {
 	//}
 
 	return &brokernetesController{
-	//schema:    schema,
-	//validator: validator,
+		appCtx: appCtx,
+		//schema:    schema,
+		//validator: validator,
 	}, nil
 }
 
@@ -71,7 +73,7 @@ func handleServiceError(err error) error {
 }
 
 func (c *brokernetesController) Catalog(ctx context.Context) (*brokerapi.Catalog, error) {
-	log := ctx.Value("log").(*zap.Logger)
+	log := c.appCtx.Value("log").(*zap.Logger)
 	log.Info("Catalog called")
 
 	catalog := brokerapi.Catalog{

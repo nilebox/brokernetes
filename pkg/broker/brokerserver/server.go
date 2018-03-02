@@ -13,7 +13,6 @@ import (
 	"github.com/nilebox/brokernetes/pkg/broker/util"
 	b9s_util "github.com/nilebox/brokernetes/pkg/util"
 
-	"github.com/deckarep/golang-set"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/urfave/negroni"

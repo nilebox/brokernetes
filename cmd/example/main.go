@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	"github.com/nilebox/brokernetes/cmd"
-	b9sApp "github.com/nilebox/brokernetes/cmd/brokernetes/app"
+	exampleApp "github.com/nilebox/brokernetes/cmd/example/app"
 )
 
 const (
@@ -53,7 +53,7 @@ func runWithContext(ctx context.Context) error {
 
 	fs.Parse(os.Args[1:]) // nolint: gas
 
-	app := b9sApp.BrokernetesBroker{
+	app := exampleApp.ExampleBroker{
 		Addr: *addr,
 
 		CacheTime:  time.Duration(*cacheMs) * time.Millisecond,
