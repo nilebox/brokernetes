@@ -74,3 +74,5 @@ release:
 	bazel run \
 		--platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 \
 		//cmd:push_docker
+
+# TODO add k8s code generation (client, DeepCopy)
