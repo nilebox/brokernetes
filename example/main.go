@@ -10,15 +10,13 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/nilebox/brokernetes/cmd"
-	exampleApp "github.com/nilebox/brokernetes/cmd/example/app"
+	exampleServer "github.com/nilebox/brokernetes/example/server"
+	"os/signal"
+	"syscall"
 )
 
 const (
 	defaultAddr = ":8080"
-
-	defaultCacheDuration  = 10 * time.Second
-	defaultExpireDuration = 1 * time.Hour
 )
 
 func main() {
@@ -31,9 +29,9 @@ func main() {
 func run() error {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
-	cmd.CancelOnInterrupt(ctx, cancelFunc)
+	cancelOnInterrupt(ctx, cancelFunc)
 
-	log := initialiseLogger()
+	log := initializeLogger()
 	defer log.Sync()
 	ctx = context.WithValue(ctx, "log", log)
 
@@ -48,21 +46,15 @@ func runWithContext(ctx context.Context) error {
 
 	addr := fs.String("addr", defaultAddr, "Address to listen on")
 
-	cacheMs := fs.Int64("cache_ms", int64(defaultCacheDuration/time.Millisecond), "Time to cache entries for in Millis")
-	expireMs := fs.Int64("expire_ms", int64(defaultExpireDuration/time.Millisecond), "Time to cache stacks unlikely to change for in Millis")
-
 	fs.Parse(os.Args[1:]) // nolint: gas
 
-	app := exampleApp.ExampleBroker{
+	app := exampleServer.ExampleServer{
 		Addr: *addr,
-
-		CacheTime:  time.Duration(*cacheMs) * time.Millisecond,
-		ExpireTime: time.Duration(*expireMs) * time.Millisecond,
 	}
 	return app.Run(ctx)
 }
 
-func initialiseLogger() *zap.Logger {
+func initializeLogger() *zap.Logger {
 	return zap.New(
 		zapcore.NewCore(
 			zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
@@ -72,4 +64,18 @@ func initialiseLogger() *zap.Logger {
 		zap.AddCaller(),
 		zap.Fields(),
 	)
+}
+
+// CancelOnInterrupt calls f when os.Interrupt or SIGTERM is received.
+// It ignores subsequent interrupts on purpose - program should exit correctly after the first signal.
+func cancelOnInterrupt(ctx context.Context, f context.CancelFunc) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		select {
+		case <-ctx.Done():
+		case <-c:
+			f()
+		}
+	}()
 }
