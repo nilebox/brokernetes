@@ -1,35 +1,7 @@
 package brokernetes
 
-import (
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	"github.com/nilebox/brokernetes/pkg/apis/brokernetes/v1"
+const (
+	// TODO should be dynamic (specified by the user), at least the prefix
+	// GroupName is the group name use in this package.
+	GroupName = "brokernetes.nilebox.github.com"
 )
-
-// SchemeGroupVersion is group version used to register these objects.
-var SchemeGroupVersion = schema.GroupVersion{Group: v1.GroupName, Version: "v1"}
-
-// Kind takes an unqualified kind and returns a Group qualified GroupKind.
-func Kind(kind string) schema.GroupKind {
-	return SchemeGroupVersion.WithKind(kind).GroupKind()
-}
-
-var (
-	// SchemeBuilder needs to be exported as `SchemeBuilder` so
-	// the code-generation can find it.
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	// AddToScheme is exposed for API installation
-	AddToScheme = SchemeBuilder.AddToScheme
-)
-
-func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypes(SchemeGroupVersion,
-		&v1.Instance{},
-		&v1.InstanceList{},
-	)
-	meta_v1.AddToGroupVersion(scheme, SchemeGroupVersion)
-
-	return nil
-}

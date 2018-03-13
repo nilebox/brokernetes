@@ -13,7 +13,7 @@ import (
 
 type BrokernetesV1Interface interface {
 	RESTClient() rest.Interface
-	InstancesGetter
+	OSBInstancesGetter
 }
 
 // BrokernetesV1Client is used to interact with features provided by the brokernetes group.
@@ -21,8 +21,8 @@ type BrokernetesV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *BrokernetesV1Client) Instances(namespace string) InstanceInterface {
-	return newInstances(c, namespace)
+func (c *BrokernetesV1Client) OSBInstances(namespace string) OSBInstanceInterface {
+	return newOSBInstances(c, namespace)
 }
 
 // NewForConfig creates a new BrokernetesV1Client for the given config.

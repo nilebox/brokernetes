@@ -4,4 +4,4 @@
 
 package v1
 
-type InstanceExpansion interface{}
+type OSBInstanceExpansion interface{}

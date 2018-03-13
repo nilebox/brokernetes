@@ -6,30 +6,28 @@ import (
 
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/nilebox/brokernetes/pkg/apis/brokernetes"
 )
 
 const (
-	InstanceResourceSingular = "osbinstance"
-	InstanceResourcePlural   = "osbinstances"
-	InstanceResourceVersion  = "v1"
-	InstanceResourceKind     = "OsbInstance"
-
-	// TODO should be dynamic (specified by the user), at least the prefix
-	// GroupName is the group name use in this package.
-	GroupName = "brokernetes.nilebox.github.com"
+	OSBInstanceResourceSingular = "osbinstance"
+	OSBInstanceResourcePlural   = "osbinstances"
+	OSBInstanceResourceVersion  = "v1"
+	OSBInstanceResourceKind     = "OSBInstance"
 
 	// TODO GroupName should be dynamic
-	InstanceResourceAPIVersion = GroupName + "/" + InstanceResourceVersion
-	InstanceResourceName       = InstanceResourcePlural + "." + GroupName
+	OSBInstanceResourceAPIVersion = brokernetes.GroupName + "/" + OSBInstanceResourceVersion
+	OSBInstanceResourceName       = OSBInstanceResourcePlural + "." + brokernetes.GroupName
 )
 
-type InstanceConditionType string
+type OSBInstanceConditionType string
 
-// These are valid conditions of a Instance object.
+// These are valid conditions of a OSBInstance object.
 const (
-	InstanceInProgress InstanceConditionType = "InProgress"
-	InstanceReady      InstanceConditionType = "Ready"
-	InstanceError      InstanceConditionType = "Error"
+	OSBInstanceInProgress OSBInstanceConditionType = "InProgress"
+	OSBInstanceReady      OSBInstanceConditionType = "Ready"
+	OSBInstanceError      OSBInstanceConditionType = "Error"
 )
 
 type ConditionStatus string
@@ -46,22 +44,22 @@ const (
 // +genclient
 // +genclient:noStatus
 
-// Instance is handled by Instance controller.
+// OSBInstance is handled by OSBInstance controller.
 // +k8s:deepcopy-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type Instance struct {
+type OSBInstance struct {
 	meta_v1.TypeMeta   `json:",inline"`
 	meta_v1.ObjectMeta `json:"metadata,omitempty"`
 
-	// Specification of the desired behavior of the Instance.
-	Spec InstanceSpec `json:"spec,omitempty"`
+	// Specification of the desired behavior of the OSBInstance.
+	Spec OSBInstanceSpec `json:"spec,omitempty"`
 
-	// Most recently observed status of the Instance.
-	Status InstanceStatus `json:"status,omitempty"`
+	// Most recently observed status of the OSBInstance.
+	Status OSBInstanceStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
-type InstanceSpec struct {
+type OSBInstanceSpec struct {
 	// TODO add necessary fields there
 
 	// TODO encrypt parameters or use Secret
@@ -71,10 +69,10 @@ type InstanceSpec struct {
 }
 
 // +k8s:deepcopy-gen=true
-// InstanceCondition describes the state of a Instance object at a certain point.
-type InstanceCondition struct {
-	// Type of Instance condition.
-	Type InstanceConditionType `json:"type"`
+// OSBInstanceCondition describes the state of a OSBInstance object at a certain point.
+type OSBInstanceCondition struct {
+	// Type of OSBInstance condition.
+	Type OSBInstanceConditionType `json:"type"`
 	// Status of the condition.
 	Status ConditionStatus `json:"status"`
 	// The last time this condition was updated.
@@ -87,7 +85,7 @@ type InstanceCondition struct {
 	Message string `json:"message,omitempty"`
 }
 
-func (sc *InstanceCondition) String() string {
+func (sc *OSBInstanceCondition) String() string {
 	var buf bytes.Buffer
 	buf.WriteString(string(sc.Type))
 	buf.WriteByte(' ')
@@ -102,12 +100,12 @@ func (sc *InstanceCondition) String() string {
 }
 
 // +k8s:deepcopy-gen=true
-type InstanceStatus struct {
-	// Represents the latest available observations of a Instance's current state.
-	Conditions []InstanceCondition `json:"conditions,omitempty"`
+type OSBInstanceStatus struct {
+	// Represents the latest available observations of a OSBInstance's current state.
+	Conditions []OSBInstanceCondition `json:"conditions,omitempty"`
 }
 
-func (ss *InstanceStatus) String() string {
+func (ss *OSBInstanceStatus) String() string {
 	first := true
 	var buf bytes.Buffer
 	buf.WriteByte('[')
@@ -123,7 +121,7 @@ func (ss *InstanceStatus) String() string {
 	return buf.String()
 }
 
-func (s *Instance) GetCondition(conditionType InstanceConditionType) (int, *InstanceCondition) {
+func (s *OSBInstance) GetCondition(conditionType OSBInstanceConditionType) (int, *OSBInstanceCondition) {
 	for i, condition := range s.Status.Conditions {
 		if condition.Type == conditionType {
 			return i, &condition
@@ -132,18 +130,18 @@ func (s *Instance) GetCondition(conditionType InstanceConditionType) (int, *Inst
 	return -1, nil
 }
 
-// Updates existing Instance condition or creates a new one. Sets LastTransitionTime to now if the
+// Updates existing OSBInstance condition or creates a new one. Sets LastTransitionTime to now if the
 // status has changed.
-// Returns true if Instance condition has changed or has been added.
-func (s *Instance) UpdateCondition(condition *InstanceCondition) bool {
+// Returns true if OSBInstance condition has changed or has been added.
+func (s *OSBInstance) UpdateCondition(condition *OSBInstanceCondition) bool {
 	cond := *condition // copy to avoid mutating the original
 	now := meta_v1.Now()
 	cond.LastTransitionTime = now
-	// Try to find this Instance condition.
+	// Try to find this OSBInstance condition.
 	conditionIndex, oldCondition := s.GetCondition(cond.Type)
 
 	if oldCondition == nil {
-		// We are adding new Instance condition.
+		// We are adding new OSBInstance condition.
 		s.Status.Conditions = append(s.Status.Conditions, cond)
 		return true
 	}
@@ -166,12 +164,12 @@ func (s *Instance) UpdateCondition(condition *InstanceCondition) bool {
 	return !isEqual
 }
 
-// InstanceList is a list of Instances.
+// OSBInstanceList is a list of OSBInstances.
 // +k8s:deepcopy-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type InstanceList struct {
+type OSBInstanceList struct {
 	meta_v1.TypeMeta `json:",inline"`
 	meta_v1.ListMeta `json:"metadata,omitempty"`
 
-	Items []Instance `json:"items"`
+	Items []OSBInstance `json:"items"`
 }

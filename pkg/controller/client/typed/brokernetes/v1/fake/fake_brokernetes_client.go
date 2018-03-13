@@ -14,8 +14,8 @@ type FakeBrokernetesV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeBrokernetesV1) Instances(namespace string) v1.InstanceInterface {
-	return &FakeInstances{c, namespace}
+func (c *FakeBrokernetesV1) OSBInstances(namespace string) v1.OSBInstanceInterface {
+	return &FakeOSBInstances{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
