@@ -2,6 +2,7 @@ package broker
 
 import (
 	"encoding/json"
+
 	brokerapi "github.com/nilebox/broker-server/pkg/api"
 	"go.uber.org/zap"
 

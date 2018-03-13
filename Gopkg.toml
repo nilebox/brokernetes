@@ -1,11 +1,17 @@
 required = [
     "github.com/bazelbuild/buildtools/buildozer",
-    "github.com/bazelbuild/buildtools/buildifier"
+    "github.com/bazelbuild/buildtools/buildifier",
+    "k8s.io/code-generator/cmd/client-gen",
+    "k8s.io/code-generator/cmd/deepcopy-gen",
 ]
 
 [prune]
   non-go = true
   go-tests = true
+
+[[override]]
+  branch = "release-1.9" # correct branch
+  name = "k8s.io/code-generator"
 
 [[constraint]]
   branch = "master" # latest

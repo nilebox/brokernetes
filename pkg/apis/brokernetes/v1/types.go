@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/nilebox/brokernetes/pkg/apis/brokernetes"
-
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -16,9 +14,13 @@ const (
 	InstanceResourceVersion  = "v1"
 	InstanceResourceKind     = "OsbInstance"
 
+	// TODO should be dynamic (specified by the user), at least the prefix
+	// GroupName is the group name use in this package.
+	GroupName = "brokernetes.nilebox.github.com"
+
 	// TODO GroupName should be dynamic
-	InstanceResourceAPIVersion = brokernetes.GroupName + "/" + InstanceResourceVersion
-	InstanceResourceName       = InstanceResourcePlural + "." + brokernetes.GroupName
+	InstanceResourceAPIVersion = GroupName + "/" + InstanceResourceVersion
+	InstanceResourceName       = InstanceResourcePlural + "." + GroupName
 )
 
 type InstanceConditionType string

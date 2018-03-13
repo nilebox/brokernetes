@@ -2,13 +2,16 @@ package storage
 
 import (
 	"encoding/json"
+
 	brokerstorage "github.com/nilebox/broker-server/pkg/stateful/storage"
+	"k8s.io/client-go/rest"
 )
 
 type crdStorage struct {
 }
 
 func (s *crdStorage) CreateInstance(instance *brokerstorage.InstanceRecord) error {
+	rest
 	return nil
 }
 

@@ -5,14 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	exampleServer "github.com/nilebox/brokernetes/example/server"
 	"os/signal"
 	"syscall"
+
+	exampleServer "github.com/nilebox/brokernetes/example/server"
 )
 
 const (
