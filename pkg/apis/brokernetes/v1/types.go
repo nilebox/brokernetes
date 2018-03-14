@@ -41,6 +41,14 @@ const (
 	ConditionUnknown ConditionStatus = "Unknown"
 )
 
+type OSBInstanceOperationType string
+
+const (
+	OperationCreate OSBInstanceOperationType = "Create"
+	OperationUpdate OSBInstanceOperationType = "Update"
+	OperationDelete OSBInstanceOperationType = "Delete"
+)
+
 // +genclient
 // +genclient:noStatus
 
@@ -61,6 +69,8 @@ type OSBInstance struct {
 // +k8s:deepcopy-gen=true
 type OSBInstanceSpec struct {
 	// TODO add necessary fields there
+	ServiceId string `json:"serviceId"`
+	PlanId    string `json:"planId"`
 
 	// TODO encrypt parameters or use Secret
 	Parameters *runtime.RawExtension `json:"parameters,omitempty"`
@@ -102,7 +112,9 @@ func (sc *OSBInstanceCondition) String() string {
 // +k8s:deepcopy-gen=true
 type OSBInstanceStatus struct {
 	// Represents the latest available observations of a OSBInstance's current state.
-	Conditions []OSBInstanceCondition `json:"conditions,omitempty"`
+	Conditions        []OSBInstanceCondition   `json:"conditions,omitempty"`
+	LastOperationType OSBInstanceOperationType `json:"lastOperationType,omitempty"`
+	Error             string                   `json:"error"`
 }
 
 func (ss *OSBInstanceStatus) String() string {
@@ -162,6 +174,14 @@ func (s *OSBInstance) UpdateCondition(condition *OSBInstanceCondition) bool {
 	s.Status.Conditions[conditionIndex] = cond
 	// Return true if one of the fields have changed.
 	return !isEqual
+}
+
+func (s *OSBInstance) GetLastOperationType() OSBInstanceOperationType {
+	return s.Status.LastOperationType
+}
+
+func (s *OSBInstance) UpdateLastOperationType(lastOperationType OSBInstanceOperationType) {
+	s.Status.LastOperationType = lastOperationType
 }
 
 // OSBInstanceList is a list of OSBInstances.

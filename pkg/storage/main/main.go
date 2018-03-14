@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 
@@ -41,9 +42,20 @@ func main() {
 		panic("FUCKING BOLLOCKZ")
 	}
 	a := storage.NewCrdStorage(restClient, "ivor")
-	err = a.CreateInstance(&brokerstorage.InstanceRecord{
+	err = a.CreateInstance(&brokerstorage.InstanceSpec{
 		InstanceId: "my-ass",
 		Parameters: json.RawMessage("{\"hello world\":\"dog\"}"),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	var input string
+	fmt.Scanln(&input)
+
+	err = a.UpdateInstance(&brokerstorage.InstanceSpec{
+		InstanceId: "my-ass",
+		Parameters: json.RawMessage("{\"hello world\":\"cat\"}"),
 	})
 	if err != nil {
 		panic(err)
