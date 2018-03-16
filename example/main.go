@@ -12,11 +12,11 @@ import (
 	clientset_client "github.com/nilebox/brokernetes/pkg/controller/client"
 
 	"github.com/ash2k/stager"
-	manager "github.com/nilebox/brokernetes/pkg/controller/manager"
-	broker "github.com/nilebox/brokernetes/example/broker"
+	"github.com/nilebox/brokernetes/pkg/controller/manager"
+	"github.com/nilebox/brokernetes/example/broker"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	storage "github.com/nilebox/brokernetes/pkg/storage"
+	"github.com/nilebox/brokernetes/pkg/storage"
 	server2 "github.com/nilebox/brokernetes/example/server"
 	"os/signal"
 	"syscall"
@@ -49,13 +49,14 @@ func main() {
 	// Create informer
 	log := initializeLogger()
 	defer log.Sync()
+	ctx = context.WithValue(ctx, "log", log)
 
 	exampleBroker, err := broker.NewExampleBroker(log)
 	if err != nil {
 		panic("Couldn't create a broker!")
 	}
 
-	namespace := "example_brokernetes_namespace"
+	namespace := "example-brokernetes-namespace"
 	storage := storage.NewCrdStorage(client, namespace)
 	manager := manager.NewManager(client.OSBInstances(namespace), exampleBroker)
 	informer := controller.OsbInstanceInformer(clientset.BrokernetesV1(), namespace, time.Minute)
@@ -69,11 +70,12 @@ func main() {
 
 	stage.StartWithChannel(informer.Run)
 
-	c.Run(context.TODO())
-
 	server := server2.ExampleServer{defaultAddr}
+	go server.Run(ctx, log, broker.Catalog(), exampleBroker, storage)
 
-	server.Run(ctx, log, broker.Catalog(), exampleBroker, storage)
+	print("STARTING!")
+
+	c.Run(ctx)
 }
 
 func initializeLogger() *zap.Logger {

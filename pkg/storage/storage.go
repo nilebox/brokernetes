@@ -9,6 +9,8 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
+
 	brokerstorage "github.com/nilebox/broker-server/pkg/stateful/storage"
 	brokernetesv1 "github.com/nilebox/brokernetes/pkg/apis/brokernetes/v1"
 	"github.com/nilebox/brokernetes/pkg/controller/client/typed/brokernetes/v1"
@@ -26,8 +28,30 @@ func NewCrdStorage(c *v1.BrokernetesV1Client, namespace string) *crdStorage {
 	}
 }
 
+
+func isConditionTrue(instance *brokernetesv1.OSBInstance, conditionType brokernetesv1.OSBInstanceConditionType) bool {
+	for _, cond := range instance.Status.Conditions {
+		if cond.Type == conditionType {
+			return cond.Status == brokernetesv1.ConditionTrue
+		}
+	}
+
+	return false
+}
+
 // CreateInstance for crdStorage just stores the instance parameters
 func (s *crdStorage) CreateInstance(instance *brokerstorage.InstanceSpec) error {
+	currentInstance, err := s.client.Get(instance.InstanceId, meta_v1.GetOptions{})
+	if err != nil {
+		if !k8s_errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		if !(currentInstance.Status.LastOperationType == brokernetesv1.OperationDelete && isConditionTrue(currentInstance, brokernetesv1.OSBInstanceReady)) {
+			return errors.New("Conflict with existing instance of the same id")
+		}
+	}
+
 	parameters := &runtime.RawExtension{
 		Raw: []byte(instance.Parameters),
 	}
@@ -36,29 +60,42 @@ func (s *crdStorage) CreateInstance(instance *brokerstorage.InstanceSpec) error 
 	readyCond := &brokernetesv1.OSBInstanceCondition{Type: brokernetesv1.OSBInstanceReady, Status: brokernetesv1.ConditionFalse}
 	errorCond := &brokernetesv1.OSBInstanceCondition{Type: brokernetesv1.OSBInstanceError, Status: brokernetesv1.ConditionFalse}
 
-	osbInstance := &brokernetesv1.OSBInstance{
-		TypeMeta: meta_v1.TypeMeta{
-			Kind:       brokernetesv1.OSBInstanceResourceKind,
-			APIVersion: brokernetesv1.OSBInstanceResourceAPIVersion,
-		},
-		ObjectMeta: meta_v1.ObjectMeta{
-			Name:      instance.InstanceId,
-			Namespace: s.namespace,
-		},
-		Spec: brokernetesv1.OSBInstanceSpec{
-			Parameters: parameters,
-		},
+	var osbInstance *brokernetesv1.OSBInstance
+	if currentInstance == nil {
+		osbInstance = &brokernetesv1.OSBInstance{
+			TypeMeta: meta_v1.TypeMeta{
+				Kind:       brokernetesv1.OSBInstanceResourceKind,
+				APIVersion: brokernetesv1.OSBInstanceResourceAPIVersion,
+			},
+			ObjectMeta: meta_v1.ObjectMeta{
+				Name:      instance.InstanceId,
+				Namespace: s.namespace,
+			},
+		}
+	} else {
+		osbInstance = &brokernetesv1.OSBInstance{}
+		currentInstance.DeepCopyInto(osbInstance)
 	}
+
 	osbInstance.UpdateCondition(inProgressCond)
 	osbInstance.UpdateCondition(readyCond)
 	osbInstance.UpdateCondition(errorCond)
+	osbInstance.Spec = brokernetesv1.OSBInstanceSpec{
+		Parameters: parameters,
+	}
 	osbInstance.UpdateLastOperationType(brokernetesv1.OperationCreate)
 
-	_, err := s.client.Create(osbInstance)
+	if currentInstance == nil {
+		_, err = s.client.Create(osbInstance)
+	} else {
+		_, err = s.client.Update(osbInstance)
+	}
+
 	if err != nil {
 		// TODO handle the conflict case
 		return err
 	}
+
 	return nil
 }
 
@@ -157,13 +194,22 @@ func (s *crdStorage) GetInstance(instanceId string) (*brokerstorage.InstanceReco
 		return nil, err
 	}
 
+	rawParameters := json.RawMessage{}
+	if instance.Spec.Parameters != nil {
+		rawParameters = json.RawMessage(instance.Spec.Parameters.Raw)
+	}
+
+	rawOutputs := json.RawMessage{}
+	if instance.Spec.Output != nil {
+		rawOutputs = json.RawMessage(instance.Spec.Output.Raw)
+	}
 	return &brokerstorage.InstanceRecord{
 		Spec: brokerstorage.InstanceSpec{
 			InstanceId: instance.GetName(),
 			ServiceId:  instance.Spec.ServiceId,
 			PlanId:     instance.Spec.PlanId,
-			Parameters: json.RawMessage(instance.Spec.Parameters.Raw),
-			Outputs:    json.RawMessage(instance.Spec.Output.Raw),
+			Parameters: rawParameters,
+			Outputs: rawOutputs,
 		},
 		State: osbState,
 		Error: instance.Status.Error,

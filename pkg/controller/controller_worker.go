@@ -75,7 +75,7 @@ func (c *Controller) processKey(key string) (bool /*retriable*/, error) {
 	instance.Kind = osb_v1.OSBInstanceResourceKind
 
 	// Do something with our state
-	log.Printf("Doing sometihng")
+	//log.Printf("Doing sometihng")
 
 	// TODO: this should probably end up kicking off a gofunc. We'll mark the
 	//       queue item as "done". Eventually this gofunc should end up

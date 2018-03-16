@@ -14,7 +14,7 @@ import (
 const (
 	DefaultNumWorkers = 20
 
-	FinalizerName = "osb_worker.brokernetes/finalizer"
+	FinalizerName = "osbworker.brokernetes/finalizer"
 )
 
 type Manager struct {
@@ -51,20 +51,14 @@ func (m *Manager) Process(instance *osb_v1.OSBInstance) (bool, error) {
 			found = true
 		}
 	}
+
 	if !found {
 		instance.Finalizers = append(instance.Finalizers, FinalizerName)
-		m.client.Update(instance)
-		return false, nil
-	}
+		_, err := m.client.Update(instance)
 
-	// If the instance is IN_PROGRESS we should try to deal with it
-	i, inProgress := instance.GetCondition(osb_v1.OSBInstanceInProgress)
-	if i == -1 {
-		return false, errors.New("Condition not found lol")
-	}
-
-	if inProgress.Status != osb_v1.ConditionTrue {
-		// Nothing to do
+		if err != nil {
+			return true, err
+		}
 		return false, nil
 	}
 
@@ -77,13 +71,21 @@ func (m *Manager) Process(instance *osb_v1.OSBInstance) (bool, error) {
 	case osb_v1.OperationDelete:
 		return m.processDelete(instance)
 	default:
-		return false, errors.New("SHIT IS FUUUUUUCKKKKKKKEDDDDD'[:w")
+		return false, errors.New("Unexpected operation type: " + string(instance.GetLastOperationType()))
 	}
+}
+
+func createRawMessage(rawExtension *runtime.RawExtension) (json.RawMessage) {
+	rawMessage := json.RawMessage{}
+	if rawExtension != nil {
+		rawMessage = json.RawMessage(rawExtension.Raw)
+	}
+	return rawMessage
 }
 
 func (m *Manager) processCreate(instance *osb_v1.OSBInstance) (bool, error) {
 	// TODO check the last modified (lease) in case of multiple controllers...
-	message, err := m.broker.CreateInstance(instance.GetName(), json.RawMessage(instance.Spec.Parameters.Raw))
+	message, err := m.broker.CreateInstance(instance.GetName(), createRawMessage(instance.Spec.Parameters))
 	err = m.handleConditions(instance, err)
 	if err != nil {
 		return false, err
@@ -121,7 +123,8 @@ func (m *Manager) handleConditions(instance *osb_v1.OSBInstance, err error) (err
 
 func (m *Manager) processDelete(instance *osb_v1.OSBInstance) (bool, error) {
 	// TODO check the last modified (lease) in case of multiple controllers...
-	err := m.broker.DeleteInstance(instance.GetName(), json.RawMessage(instance.Spec.Parameters.Raw))
+	// TODO
+	err := m.broker.DeleteInstance(instance.GetName(), createRawMessage(instance.Spec.Parameters))
 	err = m.handleConditions(instance, err)
 	if err != nil {
 		return false, err
@@ -136,7 +139,7 @@ func (m *Manager) processDelete(instance *osb_v1.OSBInstance) (bool, error) {
 
 func (m *Manager) processUpdate(instance *osb_v1.OSBInstance) (bool, error) {
 	// TODO check the last modified (lease) in case of multiple controllers...
-	message, err := m.broker.UpdateInstance(instance.GetName(), json.RawMessage(instance.Spec.Parameters.Raw))
+	message, err := m.broker.UpdateInstance(instance.GetName(), createRawMessage(instance.Spec.Parameters))
 	err = m.handleConditions(instance, err)
 	if err != nil {
 		return false, err

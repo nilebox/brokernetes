@@ -223,7 +223,7 @@
     "pkg/util",
     "pkg/zappers"
   ]
-  revision = "54ed67ae61ec680debd6b1768d430b8b46fc30fa"
+  revision = "a27c97786eb30afa0b1ad43976c36263a439255f"
 
 [[projects]]
   branch = "master"
@@ -336,7 +336,7 @@
     "go/ast/astutil",
     "imports"
   ]
-  revision = "5ad4d95e58135daa27cc1463f290951ea6fe0809"
+  revision = "c4b4e4b0fa4a67bbbfceacd5e484460d33fb87f5"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
