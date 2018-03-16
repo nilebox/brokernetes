@@ -2,56 +2,78 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
+	"time"
 	"os"
 
+	"github.com/nilebox/brokernetes/pkg/client"
+	"github.com/nilebox/brokernetes/pkg/controller"
+
+	osbinstance_client "github.com/nilebox/brokernetes/pkg/controller/client/typed/brokernetes/v1"
+	clientset_client "github.com/nilebox/brokernetes/pkg/controller/client"
+
+	"github.com/ash2k/stager"
+	manager "github.com/nilebox/brokernetes/pkg/controller/manager"
+	broker "github.com/nilebox/brokernetes/example/broker"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-
+	storage "github.com/nilebox/brokernetes/pkg/storage"
+	server2 "github.com/nilebox/brokernetes/example/server"
 	"os/signal"
 	"syscall"
-
-	exampleServer "github.com/nilebox/brokernetes/example/server"
 )
 
 const (
 	defaultAddr = ":8080"
+
 )
 
 func main() {
-	if err := run(); err != nil && err != context.Canceled && err != context.DeadlineExceeded {
-		fmt.Fprintf(os.Stderr, "%+v", err)
-		os.Exit(1)
-	}
-}
-
-func run() error {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 	cancelOnInterrupt(ctx, cancelFunc)
 
+
+	// Create kubernetes controller and run it
+	restConfig, err := client.ConfigFromEnv()
+	if err != nil {
+		panic(err)
+	}
+
+	clientset := clientset_client.NewForConfigOrDie(restConfig)
+	client, err := osbinstance_client.NewForConfig(restConfig)
+
+	if err != nil {
+		panic("Could not create osbinstance client")
+	}
+
+	// Create informer
 	log := initializeLogger()
 	defer log.Sync()
-	ctx = context.WithValue(ctx, "log", log)
 
-	return runWithContext(ctx)
-}
-
-func runWithContext(ctx context.Context) error {
-	log := ctx.Value("log").(*zap.Logger)
-	_ = log
-
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	addr := fs.String("addr", defaultAddr, "Address to listen on")
-
-	fs.Parse(os.Args[1:]) // nolint: gas
-
-	app := exampleServer.ExampleServer{
-		Addr: *addr,
+	exampleBroker, err := broker.NewExampleBroker(log)
+	if err != nil {
+		panic("Couldn't create a broker!")
 	}
-	return app.Run(ctx)
+
+	namespace := "example_brokernetes_namespace"
+	storage := storage.NewCrdStorage(client, namespace)
+	manager := manager.NewManager(client.OSBInstances(namespace), exampleBroker)
+	informer := controller.OsbInstanceInformer(clientset.BrokernetesV1(), namespace, time.Minute)
+	c := controller.NewController(informer, 2, manager)
+
+	// Run the informer and the controller
+
+	stgr := stager.New()
+	defer stgr.Shutdown()
+	stage := stgr.NextStage()
+
+	stage.StartWithChannel(informer.Run)
+
+	c.Run(context.TODO())
+
+	server := server2.ExampleServer{defaultAddr}
+
+	server.Run(ctx, log, broker.Catalog(), exampleBroker, storage)
 }
 
 func initializeLogger() *zap.Logger {
@@ -66,7 +88,8 @@ func initializeLogger() *zap.Logger {
 	)
 }
 
-// CancelOnInterrupt calls f when os.Interrupt or SIGTERM is received.
+
+// cancelOnInterrupt calls f when os.Interrupt or SIGTERM is received.
 // It ignores subsequent interrupts on purpose - program should exit correctly after the first signal.
 func cancelOnInterrupt(ctx context.Context, f context.CancelFunc) {
 	c := make(chan os.Signal, 1)

@@ -135,6 +135,18 @@
   version = "v0.1.0"
 
 [[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
+  version = "v1.6.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/gregjones/httpcache"
   packages = [
@@ -203,10 +215,15 @@
   name = "github.com/nilebox/broker-server"
   packages = [
     "pkg/api",
+    "pkg/controller",
+    "pkg/server",
+    "pkg/stateful",
     "pkg/stateful/storage",
-    "pkg/stateful/task"
+    "pkg/stateful/task",
+    "pkg/util",
+    "pkg/zappers"
   ]
-  revision = "5d69bdfee5914a762ae1c217790ee0a7e531b703"
+  revision = "54ed67ae61ec680debd6b1768d430b8b46fc30fa"
 
 [[projects]]
   branch = "master"
@@ -231,6 +248,12 @@
   packages = ["."]
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/urfave/negroni"
+  packages = ["."]
+  revision = "5dbbc83f748fc3ad38585842b0aedab546d0ea1e"
+  version = "v0.3.0"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -261,7 +284,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "21652f85b0fdddb6c2b6b77a5beca5c5a908174a"
+  revision = "b4956d363a8b14623cc81db401707679605930a3"
 
 [[projects]]
   branch = "master"
@@ -282,7 +305,7 @@
     "unix",
     "windows"
   ]
-  revision = "89ac7f292d17a339edab4de8efcba5d8672ff661"
+  revision = "cc7307a45468e49eaf2997c890f14aa03a26917b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -313,7 +336,7 @@
     "go/ast/astutil",
     "imports"
   ]
-  revision = "d853e8088c62fe13976545876d4ebb5917e2e4da"
+  revision = "5ad4d95e58135daa27cc1463f290951ea6fe0809"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -360,7 +383,7 @@
     "storage/v1alpha1",
     "storage/v1beta1"
   ]
-  revision = "fd252c3a3e1debf912ff5b80221a31a6a3c24493"
+  revision = "5584376ceeffeb13a2e98b5e9f0e9dab37de4bab"
 
 [[projects]]
   branch = "release-1.9"
@@ -405,7 +428,7 @@
     "pkg/watch",
     "third_party/forked/golang/reflect"
   ]
-  revision = "19e3f5aa3adca672c153d324e6b7d82ff8935f03"
+  revision = "cb88e003047fb517f284ff8af294451b20f0b403"
 
 [[projects]]
   branch = "release-6.0"
@@ -434,7 +457,7 @@
     "util/integer",
     "util/workqueue"
   ]
-  revision = "9389c055a838d4f208b699b3c7c51b70f2368861"
+  revision = "cade0e592a3ad56d0a368d799506a4f566628a2f"
 
 [[projects]]
   branch = "release-1.9"
@@ -450,7 +473,7 @@
     "cmd/client-gen/types",
     "cmd/deepcopy-gen"
   ]
-  revision = "91d3f6a57905178524105a085085901bb73bd3dc"
+  revision = "34f3cd0b05618a8176e2d615a1d2174f6d4336c6"
 
 [[projects]]
   branch = "master"
@@ -475,6 +498,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "524b69f814d0c65ef20aefca79bc6e5cc0c0694b33e34e174e0fad5742154e60"
+  inputs-digest = "fd2dc1e8b147e41374f9efeac92b6c980f43e220dfa24c0a6078180d303f51f6"
   solver-name = "gps-cdcl"
   solver-version = 1

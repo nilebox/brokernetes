@@ -69,6 +69,8 @@ func (c *Controller) processKey(key string) (bool /*retriable*/, error) {
 
 	// Deep-copy otherwise we are mutating our cache.
 	instance := osbInstanceObj.(*osb_v1.OSBInstance).DeepCopy()
+
+	// TODO: might not need these fields
 	instance.APIVersion = osb_v1.OSBInstanceResourceAPIVersion
 	instance.Kind = osb_v1.OSBInstanceResourceKind
 
@@ -78,7 +80,7 @@ func (c *Controller) processKey(key string) (bool /*retriable*/, error) {
 	// TODO: this should probably end up kicking off a gofunc. We'll mark the
 	//       queue item as "done". Eventually this gofunc should end up
 	//       updating the state item as it's last thing that it does
-	c.manager.Process(osbInstanceObj)
+	c.manager.Process(instance)
 
 	// conflict, retriable, bundle, err := c.process(instance)
 	// if conflict {

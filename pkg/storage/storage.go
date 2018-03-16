@@ -158,7 +158,7 @@ func (s *crdStorage) GetInstance(instanceId string) (*brokerstorage.InstanceReco
 	}
 
 	return &brokerstorage.InstanceRecord{
-		InstanceSpec: brokerstorage.InstanceSpec{
+		Spec: brokerstorage.InstanceSpec{
 			InstanceId: instance.GetName(),
 			ServiceId:  instance.Spec.ServiceId,
 			PlanId:     instance.Spec.PlanId,

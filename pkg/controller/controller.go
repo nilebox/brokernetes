@@ -47,11 +47,12 @@ func OsbInstanceInformer(client client_v1.OSBInstancesGetter, namespace string, 
 		cache.Indexers{})
 }
 
-func NewController(osbInstanceInformer cache.SharedIndexInformer, workers int) *Controller {
+func NewController(osbInstanceInformer cache.SharedIndexInformer, workers int, manager *manager.Manager) *Controller {
 	c := &Controller{
 		osbInstanceInformer: osbInstanceInformer,
 		queue:               workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "osbInstance"),
 		workers:             workers,
+		manager:			 manager,
 	}
 	osbInstanceInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    c.onOSBInstanceAdd,
